@@ -70,7 +70,7 @@
 #include <adminmenu>
 #include morecolors.inc
 
-#define PLUGIN_VERSION "2.3.2"
+#define PLUGIN_VERSION "1.0.0"
 #define CVAR_DISABLED "OFF"
 #define CVAR_ENABLED  "ON"
 #include <updater>
