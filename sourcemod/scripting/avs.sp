@@ -73,6 +73,10 @@
 #define PLUGIN_VERSION "2.3.2"
 #define CVAR_DISABLED "OFF"
 #define CVAR_ENABLED  "ON"
+#include <updater>
+
+#define UPDATE_URL    "https://raw.githubusercontent.com/msburgess3200/SourceMod-AVS/master/PLUGIN-VERSION"
+
 
 new Handle:hAdminMenu = INVALID_HANDLE;
 new Handle:hDatabase = INVALID_HANDLE;
@@ -105,11 +109,11 @@ new String:SrvIDFile[256];
 new idFileTime = 0;
 
 //static String:g_sSColors[4][13]  = {"{DEFAULT}","{LIGHTGREEN}", "{TEAM}", "{GREEN}"};
-static String:g_sSColors[5][13]  = {"{DEFAULT}","{LIGHTGREEN}", "{TEAM}", "{GREEN}", "{OLIVE}"};
-static String:g_sTColors[13][12] = {"{WHITE}",       "{RED}",        "{GREEN}",   "{BLUE}",    "{YELLOW}",    "{PURPLE}",    "{CYAN}",      "{ORANGE}",    "{PINK}",      "{OLIVE}",     "{LIME}",      "{VIOLET}",    "{LIGHTBLUE}"};
+//static String:g_sSColors[5][13]  = {"{DEFAULT}","{LIGHTGREEN}", "{TEAM}", "{GREEN}", "{OLIVE}"};
+//static String:g_sTColors[13][12] = {"{WHITE}",       "{RED}",        "{GREEN}",   "{BLUE}",    "{YELLOW}",    "{PURPLE}",    "{CYAN}",      "{ORANGE}",    "{PINK}",      "{OLIVE}",     "{LIME}",      "{VIOLET}",    "{LIGHTBLUE}"};
 //static g_iSColors[4]             = {1, 3, 3, 4};
-static g_iSColors[5]             = {1, 3, 3, 4, 5};
-static g_iTColors[13][3]         = {{255, 255, 255}, {255, 0, 0},    {0, 255, 0}, {0, 0, 255}, {255, 255, 0}, {255, 0, 255}, {0, 255, 255}, {255, 128, 0}, {255, 0, 128}, {128, 255, 0}, {0, 255, 128}, {128, 0, 255}, {0, 128, 255}};
+//static g_iSColors[5]             = {1, 3, 3, 4, 5};
+//static g_iTColors[13][3]         = {{255, 255, 255}, {255, 0, 0},    {0, 255, 0}, {0, 0, 255}, {255, 255, 0}, {255, 0, 255}, {0, 255, 255}, {255, 128, 0}, {255, 0, 128}, {128, 255, 0}, {0, 255, 128}, {128, 0, 255}, {0, 128, 255}};
 
 new String:GameName[64];
 new String:GameSearchName[64];
@@ -122,15 +126,19 @@ new String:g_game[1024][64];
 
 public Plugin:myinfo =
 {
-	name = "AdsQL Advertisements System",
-	author = "PharaohsPaw",
+	name = "AVS - Adverts via SQL",
+	author = "SkyWalker3200",
 	description = "Displays server ads from a MySQL database",
 	version = PLUGIN_VERSION,
-	url = "http://www.pwng.net"
+	url = "http://www.ctsgaming.com"
 }
 
 public OnPluginStart()
 {
+	if (LibraryExists("updater"))
+    {
+        Updater_AddPlugin(UPDATE_URL);
+    }
 	RegAdminCmd("sm_reloadads", Admin_ReloadAds, ADMFLAG_CONVARS, "- Reload the Ads ");
 	
 	hInterval = CreateConVar("adsql_interval", "45", "Time interval (seconds) between ads displayed");
@@ -327,7 +335,7 @@ public CheckSrvIDFile()
 			{
 				SetConVarString(adsql_serverid, serveridbuf);
 				GetConVarString(adsql_serverid, GameSrvID, sizeof(GameSrvID));
-				LogMessage("[AdsQL} - Read Server ID '%s' from configs/adsql/serverid.txt", serveridbuf);
+				LogMessage("[AdsQL] - Read Server ID '%s' from configs/adsql/serverid.txt", serveridbuf);
 
 				// break so we dont keep iterating through while loop, which means
 				// we will only read the FIRST uncommented line from the file!
@@ -504,12 +512,14 @@ public Action:SetupAds(Handle:timer, any:client)
 
 	if (IsGameSrvIDEmpty())
 	{
-		Format(query, sizeof(query), "SELECT * FROM adsmysql WHERE ( game='All' OR (game LIKE '%%%s%%' AND gamesrvid='All') ) ORDER BY id;", GameSearchName);
+		   Format(query, sizeof(query), "SELECT DISTINCT `locations`.`loc`, `adz`.`text`,`flags`.`flag` FROM `locations`, `adz`, `flags`, `games`, `servers` WHERE (`games`.`code` IS NULL OR `games`.`code` = '%s') AND `adz`.`flags` = `flags`.`id` AND `adz`.`loc` = `locations`.`id` AND `adz`.`server` = 1;", GameSearchName);
+		   // LogMessage("SELECT DISTINCT `locations`.`loc`, `adz`.`text`,`flags`.`flag`, `games`.`code` FROM `locations`, `adz`, `flags`, `games`, `servers` WHERE (`games`.`code` IS NULL OR `games`.`code` = '%s') AND `adz`.`flags` = `flags`.`id` AND `adz`.`loc` = `locations`.`id` AND `adz`.`server` = 1;", GameSearchName);
 	}
 	else
 	{
-		Format(query, sizeof(query), "SELECT * FROM adsmysql WHERE ( game='All' OR (game LIKE '%%%s%%' AND gamesrvid='All') OR (game LIKE '%%%s%%' AND gamesrvid LIKE '%%%s%%') ) ORDER BY id;", GameSearchName, GameSearchName, GameSrvID);
-	}
+		   Format(query, sizeof(query), "SELECT DISTINCT `locations`.`loc`, `adz`.`text`, `flags`.`flag` FROM `locations`, `adz`, `flags`, `games`, `servers` WHERE (`games`.`code` = '%s' OR `games`.`code` = 1) AND `adz`.`flags` = `flags`.`id` AND `adz`.`loc` = `locations`.`id` AND (`adz`.`server` = 1 OR `adz`.`server` = %s);", GameSearchName, GameSrvID);
+		   // LogMessage("", GameSearchName, GameSrvID);
+	}																			      //'tf'									  'tf'                       'SERVER-ID'
 
 	SQL_TQuery(hDatabase, ParseAds, query, client, DBPrio_High);
 	
@@ -639,12 +649,12 @@ public ParseAds(Handle:owner, Handle:hQuery, const String:error[], any:client)
 			PrintToConsole(client, "[AdsQL] %i rows found", SQL_GetRowCount(hQuery));
 			while(SQL_FetchRow(hQuery))
 			{
-				SQL_FetchString(hQuery, 1, g_type[g_AdCount], 2);
-				SQL_FetchString(hQuery, 2, g_text[g_AdCount], 1024);
-				SQL_FetchString(hQuery, 3, g_flags[g_AdCount], 27);
+				SQL_FetchString(hQuery, 0, g_type[g_AdCount], 2);
+				SQL_FetchString(hQuery, 1, g_text[g_AdCount], 1024);
+				SQL_FetchString(hQuery, 2, g_flags[g_AdCount], 27);
 				//SQL_FetchString(hQuery, 4, g_game[g_AdCount], 64);
-				SQL_FetchString(hQuery, 4, g_gametemp, 192);
-				SQL_FetchString(hQuery, 5, g_gamesrvid, 512);
+				//SQL_FetchString(hQuery, 4, g_gametemp, 192);
+				//SQL_FetchString(hQuery, 5, g_gamesrvid, 512);
 
 				PrintToConsole(client, "[AdsQL] Ad %i found in database: %s, %s, %s, %s [serverids: %s]", g_AdCount, g_type[g_AdCount], g_text[g_AdCount], g_flags[g_AdCount], g_gametemp, g_gamesrvid);
 				
@@ -884,14 +894,6 @@ public Action:Timer_DisplayAds(Handle:timer)
 			decl String:sColor[16];
 			new iColor = -1, iPos = BreakString(sText, sColor, sizeof(sColor));
 			
-			for (new i = 0; i < sizeof(g_sTColors); i++) 
-			{
-				if (StrEqual(sColor, g_sTColors[i])) 
-				{
-					iColor = i;
-				}
-			}
-			
 			if (iColor == -1) 
 			{
 				iPos     = 0;
@@ -899,7 +901,6 @@ public Action:Timer_DisplayAds(Handle:timer)
 			}
 			
 			new Handle:hKv = CreateKeyValues("Stuff", "title", sText[iPos]);
-			KvSetColor(hKv, "color", g_iTColors[iColor][0], g_iTColors[iColor][1], g_iTColors[iColor][2], 255);
 			KvSetNum(hKv,   "level", 1);
 			KvSetNum(hKv,   "time",  10);
 			
@@ -918,50 +919,21 @@ public Action:Timer_DisplayAds(Handle:timer)
 		
 		if (StrContains(sType, "S") != -1) 
 		{
-			new iTeamColors = StrContains(sText, "{TEAM}"), String:sColor[4];
 			
 			Format(sText, sizeof(sText), "%c%s", 1, sText);
 			
-			for (new c = 0; c < sizeof(g_iSColors); c++) 
-			{
-				if (StrContains(sText, g_sSColors[c])) 
+			for (new i = 1, iClients = GetClientCount(); i <= iClients; i++) 
 				{
-					Format(sColor, sizeof(sColor), "%c", g_iSColors[c]);
-					ReplaceString(sText, sizeof(sText), g_sSColors[c], sColor);
-				}
-			}
-			
-			if (iTeamColors == -1) 
-			{
-				for (new i = 1, iClients = GetClientCount(); i <= iClients; i++) 
-				{
-					if (IsClientInGame(i) && !IsFakeClient(i) &&
-							((!bAdmins && !(bFlags && HasFlag(i, fFlagList))) ||
-							 bAdmins && (GetUserFlagBits(i) & ADMFLAG_GENERIC ||
-							 GetUserFlagBits(i) & ADMFLAG_ROOT))) 
-					{
-						CPrintToChat(i, sText);
-					}
-				}
-			} 
-			else 
-			{
-				for (new i = 1, iClients = GetClientCount(); i <= iClients; i++) 
-				{
-					if (IsClientInGame(i) && !IsFakeClient(i) &&
-							((!bAdmins && !(bFlags && HasFlag(i, fFlagList))) ||
-							 bAdmins && (GetUserFlagBits(i) & ADMFLAG_GENERIC ||
-							 GetUserFlagBits(i) & ADMFLAG_ROOT))) 
-					{
 						if (StrEqual(GameName, "tf") || StrEqual(GameName, "cstrike"))
-
-							SayText2(i, sText);
-						else
-
-							CPrintToChat(i, sText);
-					}
+						{
+							CPrintToChatAll(sText);
+						}
+						else{
+							CPrintToChatAll(sText);
+						}
+					
 				}
-			}
+			
 		}
 	}
 }
@@ -1008,32 +980,6 @@ public Action:Timer_CenterAd(Handle:timer, Handle:pack)
 		g_hCenterAd[iClient] = INVALID_HANDLE;
 		
 		return Plugin_Stop;
-	}
-}
-
-SayText2(to, const String:message[]) 
-{
-	new Handle:hBf = StartMessageOne("SayText2", to);
-
-	if (hBf != INVALID_HANDLE)
-	{
-		if (GetUserMessageType() == UM_Protobuf)
-		{
-			PbSetBool(hBf, "chat", true);
-			PbSetInt(hBf, "ent_idx", to);
-			PbAddString(hBf, "params", message);
-			PbAddString(hBf, "params", "");
-			PbAddString(hBf, "params", "");
-			PbAddString(hBf, "params", "");
-			PbAddString(hBf, "params", "");
-		}
-		else
-		{
-			BfWriteByte(hBf,   to);
-			BfWriteByte(hBf,   true);
-			BfWriteString(hBf, message);
-		}		
-		EndMessage();
 	}
 }
 
