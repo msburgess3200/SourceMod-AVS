@@ -10,6 +10,7 @@ AVS - Advertisements via SQL
 # ToDo
 	* Fix string with FIXED ID's 
 	* A GLOBAL ID.
+	* Migrate away from file to ConVar
 	
 # NOT INCLUDED HERE
 	* You can download Dr. McKay's More Colors include file from the AlliedModders Forums.
