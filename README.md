@@ -10,7 +10,7 @@ AVS - Advertisements via SQL
 	
 	
 # ToDo
-	* Migrate away from file to ConVar
+	* Migrate away from file ID's to ConVar ID's
 	
 # NOT INCLUDED HERE
 	* You can download Dr. McKay's More Colors include file from the AlliedModders Forums.
