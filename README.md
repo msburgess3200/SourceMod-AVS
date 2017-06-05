@@ -21,4 +21,5 @@ AVS - Advertisements via SQL
 	* PharaohsPaw - Original Advertisements for MySQL
 	* Pitbull3 - Beta Testing
 	* Rare @ Degree-Gaming for solving problems I haven't come up with yet.. <3
+	* rubika for finishing the color coding
 	* SkyWalker - Plugin Updater / Maintainer

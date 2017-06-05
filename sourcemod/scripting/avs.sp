@@ -108,12 +108,6 @@ new g_Current;
 new String:SrvIDFile[256];
 new idFileTime = 0;
 
-//static String:g_sSColors[4][13]  = {"{DEFAULT}","{LIGHTGREEN}", "{TEAM}", "{GREEN}"};
-//static String:g_sSColors[5][13]  = {"{DEFAULT}","{LIGHTGREEN}", "{TEAM}", "{GREEN}", "{OLIVE}"};
-//static String:g_sTColors[13][12] = {"{WHITE}",       "{RED}",        "{GREEN}",   "{BLUE}",    "{YELLOW}",    "{PURPLE}",    "{CYAN}",      "{ORANGE}",    "{PINK}",      "{OLIVE}",     "{LIME}",      "{VIOLET}",    "{LIGHTBLUE}"};
-//static g_iSColors[4]             = {1, 3, 3, 4};
-//static g_iSColors[5]             = {1, 3, 3, 4, 5};
-//static g_iTColors[13][3]         = {{255, 255, 255}, {255, 0, 0},    {0, 255, 0}, {0, 0, 255}, {255, 255, 0}, {255, 0, 255}, {0, 255, 255}, {255, 128, 0}, {255, 0, 128}, {128, 255, 0}, {0, 255, 128}, {128, 0, 255}, {0, 128, 255}};
 
 new String:GameName[64];
 new String:GameSearchName[64];
