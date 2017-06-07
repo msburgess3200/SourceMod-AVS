@@ -2,6 +2,8 @@
 AVS - Advertisements via SQL
 
 # ChangeLog
+	* Fixed Bug with file titles, instead of database titles
+	* Updated Color Array
 	* Uploaded SQL Data
 	* Uploaded WebPanel *** PANEL NOT FINISHED. June 6th, 2017
 	* Replaced string ID's with FIXED ID's 
