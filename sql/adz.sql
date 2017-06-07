@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Jun 07, 2017 at 12:56 AM
+-- Generation Time: Jun 07, 2017 at 04:55 PM
 -- Server version: 5.7.18-log
 -- PHP Version: 5.5.38
 
@@ -43,9 +43,11 @@ CREATE TABLE `adz` (
 
 INSERT INTO `adz` (`id`, `game`, `server`, `text`, `loc`, `flags`) VALUES
 (1, 1, 1, '{CYAN}blah blah blah', 5, 1),
-(2, 1, 1, 'blah blah #2', 5, 1),
+(2, 1, 1, '{GREEN}blah{PINK} blah {WHITE}#2', 5, 1),
 (3, 2, 2, 'blah blah #3', 5, 1),
-(4, 2, 3, 'blah lbha blaholifg', 5, 1);
+(4, 2, 3, 'blah lbha blaholifg', 5, 1),
+(5, 2, 3, 'Hello, I\'m for the root admin only!', 3, 25),
+(6, 2, 1, '{FULLRED}Admin text only', 5, 2);
 
 -- --------------------------------------------------------
 
@@ -225,7 +227,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `adz`
 --
 ALTER TABLE `adz`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 --
 -- AUTO_INCREMENT for table `flags`
 --
