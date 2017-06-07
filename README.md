@@ -17,6 +17,15 @@ AVS - Advertisements via SQL
 # NOT INCLUDED HERE
 	* You can download Dr. McKay's More Colors include file from the AlliedModders Forums.
 	
+	
+# Donate?
+	Help us keep this updated by donating.
+	It takes a lot of time and effect to keep large projects
+	Like this one, to keep it updated.
+	Help us get a cup of coffee by clicking the link below:
+	https://paypal.me/tss3ctsgaming
+	TSS3, Inc. is a registered trademark, and is copyright as such.
+
 # Credits
 	* Dr. McKay - For MoreColors.inc
 	* strontiumdog - Original Advertisements
