@@ -2,6 +2,8 @@
 AVS - Advertisements via SQL
 
 # ChangeLog
+	* Uploaded SQL Data
+	* Uploaded WebPanel *** PANEL NOT FINISHED. June 6th, 2017
 	* Replaced string ID's with FIXED ID's 
 	* Replaced "All" with FIXED ID of 1.
 	* Added More Colors (by Dr. McKay)
