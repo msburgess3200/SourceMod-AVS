@@ -70,7 +70,7 @@
 #include <adminmenu>
 #include morecolors.inc
 
-#define PLUGIN_VERSION "1.0.0"
+#define PLUGIN_VERSION "1.0.1"
 #define CVAR_DISABLED "OFF"
 #define CVAR_ENABLED  "ON"
 #include <updater>
@@ -104,9 +104,6 @@ new g_iFrames = 0;
 new g_iTickrate;
 new g_AdCount;
 new g_Current;
-
-new String:SrvIDFile[256];
-new idFileTime = 0;
 
 
 new String:GameName[64];
@@ -144,7 +141,7 @@ public OnPluginStart()
 	adsql_version = CreateConVar("adsql_version", PLUGIN_VERSION, "AdsQL Plugin Version", FCVAR_NOTIFY|FCVAR_SPONLY);
 	
 	// make this one public because its useful to see it in HLSW etc.
-	adsql_serverid = CreateConVar("adsql_serverid", "", "ID string to uniquely identify this server when loading ads.\nThe SUPPORTED place to define this is:\n\n  * (sm_basepath)/configs/adsql/serverid.txt *\n\nto properly support running >1 server per dedicated server \"tree\".\nSee install docs and FAQ for details.", FCVAR_NOTIFY|FCVAR_SPONLY);
+	adsql_serverid = CreateConVar("adsql_serverid", "", "ID string to uniquely identify this server when loading ads.", FCVAR_NOTIFY|FCVAR_SPONLY);
 
 	// hey, why not, lets make a debug cvar...
 	adsql_debug = CreateConVar("adsql_debug", "0", "Enable debug logging for AdsQL plugin: 0=off, 1=on");
@@ -155,13 +152,7 @@ public OnPluginStart()
 
 
 	// set up our serverid.txt file path
-	BuildPath(Path_SM,SrvIDFile,sizeof(SrvIDFile),"configs/adsql/serverid.txt");
-
-	if (FileExists(SrvIDFile))
-	{
-		// we probably want to try to read our server id before we hook
-		CheckSrvIDFile();
-	}
+	// BuildPath(Path_SM,SrvIDFile,sizeof(SrvIDFile),"configs/adsql/serverid.txt");
 
 	// hook changes to the server id string cvar so we can reload ads
 	HookConVarChange(adsql_serverid, NewIDSetupAds);
@@ -245,7 +236,7 @@ public OnPluginStart()
 	// I could change this but we want to make it easy for
 	// existing users of the sm_adsmysql plugin to switch:
 
-	SQL_TConnect(DBConnect, "admintools");
+	SQL_TConnect(DBConnect, "sm_avs");
 
 	// load our configuration from cfg/sourcemod/adsql.cfg
 	// auto-create a default adsql.cfg is false because
@@ -253,7 +244,7 @@ public OnPluginStart()
 	// this is NOT a good way to define it for people who
 	// run >1 game out of the same tree (precisely why I
 	// have serverid.txt under (sm base dir)/configs/adsql)
-	AutoExecConfig(false, "adsql");
+	AutoExecConfig(true, "adsql");
 	
 }
 
@@ -295,53 +286,6 @@ public IsGameSrvIDEmpty()
 
 	return false;
 
-}
-
-
-public CheckSrvIDFile()
-{
-
-	if (!FileExists(SrvIDFile))
-	{
-		LogMessage("[AdsQL] - Server ID file configs/adsql/serverid.txt not read - file not found.");
-		return false;
-	}
-
-	new idNewFileTime = GetFileTime(SrvIDFile, FileTime_LastChange);
-
-	if (idFileTime != idNewFileTime)
-	{
-		if (idFileTime != 0)
-		{
-			LogMessage("[AdsQL] - Updated configs/adsql/serverid.txt detected");
-		}
-
-		// update our global serverid.txt timestamp
-		idFileTime = idNewFileTime;
-
-		new Handle:FileHandle = OpenFile(SrvIDFile, "r");
-		decl String:serveridbuf[128];
-		while (!IsEndOfFile(FileHandle))
-		{
-			ReadFileLine(FileHandle, serveridbuf, sizeof(serveridbuf));
-			TrimString(serveridbuf);
-			if(strncmp(serveridbuf, "//", 2) != 0)
-			{
-				SetConVarString(adsql_serverid, serveridbuf);
-				GetConVarString(adsql_serverid, GameSrvID, sizeof(GameSrvID));
-				LogMessage("[AdsQL] - Read Server ID '%s' from configs/adsql/serverid.txt", serveridbuf);
-
-				// break so we dont keep iterating through while loop, which means
-				// we will only read the FIRST uncommented line from the file!
-				break;
-			}
-		
-		}
-
-		CloseHandle(FileHandle);
-	}
-
-	return true;
 }
 
 public NewIDSetupAds(Handle:convar, const String:oldValue[], const String:newValue[])
@@ -422,11 +366,6 @@ public DBConnect(Handle:owner, Handle:hndl, const String:error[], any:data)
 public OnMapStart()
 {
 	g_Current = 0;
-
-	
-	// Check to see if serverid.txt has changed since last map
-	// and if so, load our new server ID
-	CheckSrvIDFile();
 
 	bMapJustStarted = true;
 

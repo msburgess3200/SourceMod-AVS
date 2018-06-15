@@ -4,13 +4,14 @@
 	{
 		"Version"
 		{
-			"Latest"	"1.0.0"
+			"Latest"	"1.0.1"
 			"Previous"	"0.0.0"
 		}
 		
-		"Notes"	"More info @ www.sourcemod.net. Changes in 1.0.1:"
-		"Notes"	"Added new Batman model"
-		"Notes"	"Minor code changes"
+		"Notes"	"+ Fixed SQL Injection issue."
+		"Notes"	"+ Fixed ServerID file to ConVar."
+		"Notes"	"+ Changed database name to sm_avs."
+		"Notes"	"+ Added AutoExec to create cfg."
 	}
 	
 	"Files"
