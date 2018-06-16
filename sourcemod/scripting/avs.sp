@@ -445,15 +445,15 @@ public Action:SetupAds(Handle:timer, any:client)
 
 	if (IsGameSrvIDEmpty())
 	{
-		   Format(query, sizeof(query), "SELECT DISTINCT `locations`.`loc`, `adz`.`text`,`flags`.`flag` FROM `locations`, `adz`, `flags`, `games`, `servers` WHERE (`games`.`code` IS NULL OR `games`.`code` = '%s') AND `adz`.`flags` = `flags`.`id` AND `adz`.`loc` = `locations`.`id` AND `adz`.`server` = 1;", GameSearchName);
-		   // LogMessage("SELECT DISTINCT `locations`.`loc`, `adz`.`text`,`flags`.`flag`, `games`.`code` FROM `locations`, `adz`, `flags`, `games`, `servers` WHERE (`games`.`code` IS NULL OR `games`.`code` = '%s') AND `adz`.`flags` = `flags`.`id` AND `adz`.`loc` = `locations`.`id` AND `adz`.`server` = 1;", GameSearchName);
+			// we are not going to show any advertisements if there is no ID setup.
+		   // Format(query, sizeof(query), "SELECT DISTINCT `locations`.`loc`, `adz`.`text`,`flags`.`flag` FROM `locations`, `adz`, `flags`, `games`, `servers` WHERE (`games`.`code` IS NULL OR `games`.`code` = '%s') AND `adz`.`flags` = `flags`.`id` AND `adz`.`loc` = `locations`.`id` AND `adz`.`server` = 1;", GameSearchName);
 	}
 	else
 	{
-		   Format(query, sizeof(query), "SELECT DISTINCT `locations`.`loc`, `adz`.`text`, `flags`.`flag` FROM `locations`, `adz`, `flags`, `games`, `servers` WHERE (`games`.`code` = '%s' OR `games`.`code` = 1) AND `adz`.`flags` = `flags`.`id` AND `adz`.`loc` = `locations`.`id` AND (`adz`.`server` = 1 OR `adz`.`server` = %s);", GameSearchName, GameSrvID);
-		   // LogMessage("", GameSearchName, GameSrvID);
-	}																			      //'tf'									  'tf'                       'SERVER-ID'
-
+		   Format(query, sizeof(query), "SELECT DISTINCT `locations`.`loc`, `adz`.`text`, `flags`.`flag`, `games`.`code`,`servers`.`id` FROM `locations`, `adz`, `flags`, `games`, `servers` WHERE (`games`.`code` = '%s' OR `games`.`code` = 1) AND `adz`.`flags` = `flags`.`id` AND `adz`.`loc` = `locations`.`id` AND (`adz`.`server` = 1 OR `adz`.`server` = %s) AND `servers`.`id` = %s;", GameSearchName, GameSrvID, GameSrvID);
+		   // LogMessage("SELECT DISTINCT `locations`.`loc`, `adz`.`text`, `flags`.`flag`,  FROM `locations`, `adz`, `flags`, `games`, `servers`.`id` WHERE (`games`.`code` = '%s' OR `games`.`code` = 1) AND `adz`.`flags` = `flags`.`id` AND `adz`.`loc` = `locations`.`id` AND (`adz`.`server` = 1 OR `adz`.`server` = %s) AND `servers`.`id` = %s;", GameSearchName, GameSrvID, GameSrvID);
+	}
+	
 	SQL_TQuery(hDatabase, ParseAds, query, client, DBPrio_High);
 	
 	// ok, here is where we can avoid setting up more than one ad display timer
@@ -585,9 +585,8 @@ public ParseAds(Handle:owner, Handle:hQuery, const String:error[], any:client)
 				SQL_FetchString(hQuery, 0, g_type[g_AdCount], 2);
 				SQL_FetchString(hQuery, 1, g_text[g_AdCount], 1024);
 				SQL_FetchString(hQuery, 2, g_flags[g_AdCount], 27);
-				//SQL_FetchString(hQuery, 4, g_game[g_AdCount], 64);
-				//SQL_FetchString(hQuery, 4, g_gametemp, 192);
-				//SQL_FetchString(hQuery, 5, g_gamesrvid, 512);
+				SQL_FetchString(hQuery, 3, g_gametemp, 192);
+				SQL_FetchString(hQuery, 4, g_gamesrvid, 512);
 
 				PrintToConsole(client, "[AdsQL] Ad %i found in database: %s, %s, %s, %s [serverids: %s]", g_AdCount, g_type[g_AdCount], g_text[g_AdCount], g_flags[g_AdCount], g_gametemp, g_gamesrvid);
 				
@@ -652,7 +651,7 @@ public Action:Timer_DisplayAds(Handle:timer)
 	if (StrEqual(sGame, GameName) || StrEqual(sGame, "All"))
 	{
 	
-		new bool:bAdmins = StrEqual(sFlags, ""), bool:bFlags = !StrEqual(sFlags, "none");
+		new bool:bAdmins = StrEqual(sFlags, ""), bool:bFlags = !StrEqual(sFlags, "");
 		if (bFlags) 
 		{
 			FlagBitsToArray(ReadFlagString(sFlags), fFlagList, sizeof(fFlagList));
